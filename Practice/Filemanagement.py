@@ -1,0 +1,28 @@
+file=open("tops1.txt","w")
+file.write("\n this is a file now open")
+file.close()
+print("file open")
+print("************************************************************")
+
+file=open("tops1.txt","r")
+print(file.read())
+file.close()
+print("************************************************************")
+
+file=open("tops1.txt","a")
+file.write("\n this is a file now appended")
+file.close()
+print("************************************************************")
+
+file=open("tops1.txt","r")
+print(file.read())
+file.close()
+print("************************************************************")
+
+file=open("tops2.txt","w+")
+file.write("\n this is a file 2 now open")
+file.seek(0)
+print(file.read())
+file.close()
+print("w+ operation  completed")
+print("************************************************************")
