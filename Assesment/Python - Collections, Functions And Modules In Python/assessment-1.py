@@ -77,6 +77,8 @@ def view_all_students():
             }
             print(student_data)
 
+
+#counseller function
 def counseller():
     while True:
         print("1. Add student")
@@ -102,7 +104,7 @@ def counseller():
         else:
             print("Invalid choice!")
 
-
+#add marks faculty for students
 def student_faculty(student_id):
     if student_id in students:
         subject = input("Enter subject: ")
@@ -115,7 +117,8 @@ def student_faculty(student_id):
     else:
         print("Student ID not found!")
         print("*************************************************************")
-        
+
+#faculty student     
 def faculty():
     while True:
         print("1.add mark to student")
