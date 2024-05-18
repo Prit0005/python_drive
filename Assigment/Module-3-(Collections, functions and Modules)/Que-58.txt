@@ -1,0 +1,4 @@
+
+ this file is open
+ this file is close
+ this file is in read mode
