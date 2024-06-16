@@ -1,9 +1,20 @@
-from django.shortcuts import render
-from .models import User
+from django.shortcuts import render,redirect
+from .models import User,Product
+import requests
+import random
 
 # Create your views here.
 def index(request):
-    return render(request,'index.html')
+    try:
+        user=User.objects.get(email=request.session['email'])
+        if user.usertype=='buyer':
+            return render(request,'index.html')
+        else:
+            return render(request,'seller-index.html')
+    except:
+        return render(request,'index.html')
+    
+
 
 def contact(request):
     return render(request,'contact.html')
@@ -36,6 +47,7 @@ def signup(request):
                     address=request.POST['address'],
                     password=request.POST['password'],
                     profile_picture=request.FILES['profile_picture'],
+                    usertype=request.POST['usertype']
                 )
                 msg='user registered sucessfully'
                 return render(request,'login.html',{'msg':msg})
@@ -44,7 +56,7 @@ def signup(request):
                 return render(request,'signup.html',{'msg':msg})
     else:
         return render(request,'signup.html')
-
+        
 def login(request):
     if request.method=="POST":
         try:
@@ -53,12 +65,16 @@ def login(request):
                 request.session['email']=user.email
                 request.session['fname']=user.fname
                 request.session['profile_picture']=user.profile_picture.url
-                return render(request,'index.html')
+                if user.usertype=="buyer":
+                    return render(request,'index.html')
+                else:
+                    return render(request,'seller-index.html')
             else:
-                msg='incorrect password'
+                msg="Incorrect Password"
                 return render(request,'login.html',{'msg':msg})
-        except:
-            msg='email not registered'
+        except Exception as e:
+            print(e)
+            msg="Email Not Registered"
             return render(request,'login.html',{'msg':msg})
     else:
         return render(request,'login.html')
@@ -88,9 +104,15 @@ def profile(request):
         user.save()
         request.session['profile_picture']=user.profile_picture.url
         msg='profile update sucessfully'
-        return render(request,'profile.html',{'user':user,'msg':msg})
+        if user.usertype=="buyer":
+            return render(request,'profile.html',{'user':user})
+        else:
+            return render(request,'seller-profile.html',{'user':user})
     else:
-        return render(request,'profile.html',{'user':user})
+        if user.usertype=="buyer":
+            return render(request,'profile.html',{'user':user})
+        else:
+            return render(request,'seller-profile.html',{'user':user})
     
 def change_password(request):
     user=User.objects.get(email=request.session['email'])
@@ -103,7 +125,126 @@ def change_password(request):
                     del request.session['email']
                     del request.session['fname']
                     del request.session['profile_picture']
-                    msg='password change sucessfull'
+                    msg="Password Changed Successfully"
                     return render(request,'login.html',{'msg':msg})
+                else:
+                    msg="Old Password & New Password Can't Be Same"
+                    if user.usertype=="buyer":
+                        return render(request,'change-password.html',{'msg':msg})
+                    else:
+                        return render(request,'seller-change-password.html',{'msg':msg})
+            else:
+                msg="New Password & Confirm New Password Does Not Matched"
+                if user.usertype=="buyer":
+                    return render(request,'change-password.html',{'msg':msg})
+                else:
+                    return render(request,'seller-change-password.html',{'msg':msg})
+        else:
+            msg="Old Password Does Not Matched"
+            if user.usertype=="buyer":
+                return render(request,'change-password.html',{'msg':msg})
+            else:
+                return render(request,'seller-change-password.html',{'msg':msg})
     else:
-        return render(request,'change_password.html')
+        if user.usertype=="buyer":
+            return render(request,'change-password.html')
+        else:
+            return render(request,'seller-change-password.html')
+
+
+def forgot_password(request):
+    if request.method=="POST":
+        try:
+            user=User.objects.get(mobile=request.POST['mobile'])
+            mobile=request.POST['mobile']
+            otp=str(random.randint(1000,9999))
+            url = "https://www.fast2sms.com/dev/bulkV2"
+            querystring = {"authorization":"l7r1fEQqshvmyiMg3AtDPNZ8XKpVuUaB6HRdCxbI4G95zcJTekqYj43mlJTgieZ9HUNy27XMK5cob6Lr","message":"OTP "+otp,"language":"english","route":"q","numbers":mobile}
+            headers = {'cache-control': "no-cache"}
+            response = requests.request("GET", url, headers=headers, params=querystring)
+            print(response.text)
+            print("OTP:",otp)
+            request.session['otp']=otp
+            request.session['mobile']=mobile
+            return render(request,'otp.html')           
+        except:
+            msg="Mobile Number Not Registered"
+            return render(request,'forgot_password.html',{'msg':msg})
+    else:
+        return render(request,'forgot_password.html')
+
+def verify_otp(request):
+    otp1=str(request.POST['otp'])
+    otp2=str(request.session['otp'])
+
+    if otp1==otp2:
+        del request.session['otp']
+        return render(request,'new_password.html')
+    else:
+        msg='invalid otp'
+        return render(request,'otp.html',{'msg':msg}) 
+
+
+def new_password(request):
+    if request.POST['new_password']==request.POST['cnew_password']:
+        user=User.objects.get(mobile=request.session['mobile'])
+        user.password=request.POST['new_password']
+        del request.session['mobile']
+        user.save()
+        msg='password Updated Successfully'
+        return render(request,'login.html',{'msg':msg})
+    else:
+        msg="new password and confirm password doesn't Matched"
+        return render(request,'new-password.html',{'msg':msg})
+
+def seller_add_product(request):
+    seller=User.objects.get(email=request.session['email'])
+    if request.method=="POST":
+        Product.objects.create(
+            seller=seller,
+            product_category=request.POST['product_category'],
+            product_price=request.POST['product_price'],
+            product_name=request.POST['product_name'],
+            product_desc=request.POST['product_desc'],
+            product_image=request.FILES['product_image'],
+            )
+        msg='Product add sucessfull'
+        return render(request,'seller-add-product.html',{'msg':msg})
+    else:
+        return render(request,'seller-add-product.html')
+
+def seller_view_product(request):
+    seller = User.objects.get(email=request.session['email'])
+    products = Product.objects.filter(seller=seller)
+    
+    return render(request, 'seller-view-product.html', {'products': products})
+
+
+def seller_product_detail(request,pk):
+    product=Product.objects.get(pk=pk)
+
+    return render(request,'seller-product-detail.html',{'product':product})
+
+def seller_edit_product(request,pk):
+    product=Product.objects.get(pk=pk)
+    if request.method=='POST':
+        product.product_category=request.POST['product_category']
+        product.product_name=request.POST['product_name']
+        product.product_price=request.POST['product_price']
+        product.product_desc=request.POST['product_desc']
+        try:
+            product.product_image=request.FILES['product_image'] 
+        except:
+            pass
+        product.save()
+        msg='Product update sucessfully'           
+        return render(request,'seller_edit_product.html',{'product':product ,'msg':msg})
+    else:
+        return render(request,'seller_edit_product.html',{'product':product})
+
+def seller_delete_product(request,pk):
+    product=Product.objects.get(pk=pk)
+    product.delete()
+    return redirect('seller-view-product')
+
+  
