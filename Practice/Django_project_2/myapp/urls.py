@@ -18,6 +18,10 @@ urlpatterns = [
     path('seller-add-product/',views.seller_add_product,name='seller-add-product'),
     path('seller-view-product/',views.seller_view_product,name='seller-view-product'),
     path('seller-product-detail/<int:pk>/',views.seller_product_detail,name='seller-product-detail'),
+     path('product-details/<int:pk>/',views.product_details,name='product-detail'),
     path('seller-edit-product/<int:pk>/',views.seller_edit_product,name='seller-edit-product'),
     path('seller-delete-product/<int:pk>/',views.seller_delete_product,name='seller-delete-product'),
+    path('add-to-wishlist/<int:pk>/',views.add_to_wishlist,name='add-to-wishlist'),
+    path('wishlist/',views.wishlist,name='wishlist'),
+    path('remove-wishlist/<int:pk>/',views.remove_wishlist,name='remove-wishlist')
 ]
