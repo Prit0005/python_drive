@@ -50,9 +50,15 @@
 						</p>
 						<br><br>
 						{% if request.session.email %}
-						<span class="mtext-106 cl2">
-							<a href="{% url 'seller-edit-product' pk=product.pk %}"><input type="button" class="btn btn-primary" value="Add To Cart"></a>
-						</span>
+						{% if cart_flag == False %}
+							<span class="mtext-106 cl2">
+								<a href="{% url 'add-to-cart' pk=product.pk %}"><input type="button" class="btn btn-primary" value="Add To Cart"></a>
+							</span>
+						{% else %}
+							<span class="mtext-106 cl2">
+								<a href="{% url 'remove-cart' pk=product.pk %}"><input type="button" class="btn btn-danger" value="Remove From Cart"></a>
+							</span>
+						{% endif %}
 
 						{% if wishlist_flag == False %}
 							<span class="mtext-106 cl2">
