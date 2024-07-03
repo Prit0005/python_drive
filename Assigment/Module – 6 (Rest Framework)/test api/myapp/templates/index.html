@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title></title>
+</head>
+<body>
+	{% if msg %}
+	<b style="color: blue;">{{msg}}</b>
+	{% endif %}
+<form name="insert" method="post" action="{% url 'index'%}">
+	{% csrf_token %}
+	<table>
+		<tr>
+			<td>Title</td>
+			<td><input type="text" name="title"></td>
+		</tr>
+		<tr>
+			<td>Author</td>
+			<td><input type="text" name="author"></td>
+		</tr>
+		<tr>
+			<td>ISBN</td>
+			<td><input type="text" name="isbn"></td>
+		</tr>
+		<tr>
+			<td>Publisher</td>
+			<td><input type="text" name="publisher"></td>
+		</tr>
+		<tr>
+			<td colspan="2" align="center">
+				<input type="submit" value="Insert" name="action">
+			</td>
+		</tr>
+	</table>
+<a href="{% url 'fetch-data' %}">fetch all book</a>
+
+<table width="100%" border="1">
+	<tr>
+		<th>ID</th>
+		<th>TITLE</th>
+		<th>AUTHOR</th>
+		<th>ISBN</th>
+		<th>PUBLISHER</th>
+		<th>EDIT</th>
+		<th>DELETE</th>
+	</tr>
+	{% for i in book %}
+	<tr>
+		<td>{{i.id}}</td>
+		<td>{{i.title}}</td>
+		<td>{{i.author}}</td>
+		<td>{{i.isbn}}</td>
+		<td>{{i.publisher}}</td>
+		<td>
+				<a href="{% url 'edit-book' pk=i.id %}">
+					{% csrf_token %}
+					<button type="button">EDIT</button>
+				</a>
+			</td>
+			<td>
+				<form method="post" action="{% url 'delete-book' i.id %}">
+					{% csrf_token %}
+					<button type="submit">DELETE</button>
+				</form>
+			</td>
+	</tr>
+	{% endfor %}
+</table>
+</form>
+
+</body>
+</html>
