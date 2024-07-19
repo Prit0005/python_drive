@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title></title>
+</head>
+<body>
+	{% if msg%}
+	<b>{{msg}}</b>
+	{% endif %}
+<form method="post" action="{% url 'index' %}">
+	{% csrf_token %}
+	<table>
+		<tr>
+			<td>First name</td>
+			<td><input type="text" name="fname"></td>
+		</tr>
+		<tr>
+			<td>Last name</td>
+			<td><input type="text" name="lname"></td>
+		</tr>
+		<tr>
+			<td>role</td>
+			<td><input type="text" name="role"></td>
+		</tr>
+		<tr>
+			<td colspan="2" align="center">
+				<input type="submit" value="insert">
+			</td>
+		</tr>
+	</table>
+</form>
+	 {% if users %}
+        <table>
+            <td>
+                <tr>
+                    <th>First Name</th>
+                    <th>Last Name</th>
+                    <th>Role</th>
+                </tr>
+            </td>
+            <td>
+                {% for user in users %}
+                    <tr>
+                        <td>{{ user.fname }}</td>
+                        <td>{{ user.lname }}</td>
+                        <td>{{ user.role }}</td>
+
+                        <td>
+                        <tr class="update-form-row" id="update-form-{{ user.id }}" style="display: none;">
+                <td colspan="4">
+                    <form method="post" action="{% url 'update' user.id %}" class="update-form">
+                        {% csrf_token %}
+                        <input type="hidden" name="user_id" value="{{ user.id }}">
+                        <label for="id_fname">First Name:</label>
+                        <input type="text" id="id_fname_{{ user.id }}" name="fname" value="{{ user.fname }}"><br>
+                        <label for="id_lname">Last Name:</label>
+                        <input type="text" id="id_lname_{{ user.id }}" name="lname" value="{{ user.lname }}"><br>
+                        <label for="id_role">Role:</label>
+                        <input type="text" id="id_role_{{ user.id }}" name="role" value="{{ user.role }}"><br>
+                        <button type="submit">Save</button>
+                    </form>
+                </td>
+            </tr>
+                    </td>
+                        <td>
+                        	<button class="update-btn" data-user-id="{{ user.id }}">Update</button>
+                       	<form method="post" action="{% url 'delete' user.id %}">
+                            {% csrf_token %}
+
+                            <button type="submit">Delete</button>
+                        </form>
+                        </td>
+
+                    </tr>
+                {% endfor %}
+            </td>
+        </table>
+    {% else %}
+        <p>No users found.</p>
+    {% endif %}
+ <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            var updateButtons = document.querySelectorAll('.update-btn');
+            updateButtons.forEach(function(button) {
+                button.addEventListener('click', function() {
+                    var userId = this.getAttribute('data-user-id');
+                    var updateFormRow = document.querySelector('#update-form-' + userId);
+                    if (updateFormRow) {
+                        if (updateFormRow.style.display === 'none') {
+                            updateFormRow.style.display = 'table-row';
+                        } else {
+                            updateFormRow.style.display = 'none';
+                        }
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
